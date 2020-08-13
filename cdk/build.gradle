@@ -1,0 +1,57 @@
+plugins {
+	id 'java'
+	id 'application'
+	// Code Formatter
+	// https://github.com/diffplug/spotless
+	id 'com.diffplug.spotless' version '5.1.0'
+	// Static analyzer
+	// https://github.com/google/error-prone
+	id 'net.ltgt.errorprone' version '1.2.1'
+	// https://github.com/spotbugs/spotbugs
+	id 'com.github.spotbugs' version '4.4.4'
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	errorprone 'com.google.errorprone:error_prone_core:2.4.0'
+	testImplementation platform('org.junit:junit-bom:5.6.2')
+	testImplementation 'org.junit.jupiter:junit-jupiter'
+	implementation 'software.amazon.awscdk:core:1.57.0'
+	implementation 'software.amazon.awscdk:apigatewayv2:1.57.0'
+	implementation 'software.amazon.awscdk:lambda:1.57.0'
+}
+
+test {
+	useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_11
+}
+
+application {
+	mainClassName = 'com.example.cdk.MyApp'
+}
+
+spotless {
+	java {
+		googleJavaFormat()
+	}
+	groovyGradle {
+		greclipse()
+	}
+}
+
+task makeLambdaArtifact(type: Exec) {
+	workingDir '../lambda'
+	commandLine './gradlew', 'build'
+}
+
+run.dependsOn makeLambdaArtifact
